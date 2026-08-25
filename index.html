@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FLAMES — Love Game 🔥</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ═══ DISCLAIMER BADGE (rotates) ═══ -->
+<div class="disclaimer-wrap" aria-label="Disclaimer: FLAMES is a fun name game. It doesn't scientifically measure compatibility.">
+  <div class="disclaimer-badge" role="note">
+    <span class="d-spark">✨</span>
+    <span class="d-text">💡 FLAMES is a fun name game ❤️ — not a relationship predictor</span>
+    <span class="d-spark">✨</span>
+  </div>
+</div>
+
+<!-- ═══ PARTICLE CANVAS ═══ -->
+<canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+<!-- ═══ TOAST ═══ -->
+<div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ═══ APP ═══ -->
+<main id="app">
+
+  <!-- ── SCREEN 1: HERO ── -->
+  <section id="screen-hero" class="screen active" aria-label="Welcome screen">
+    <div class="hero-inner">
+      <div class="hero-glow" aria-hidden="true"></div>
+      <p class="hero-eyebrow">🔥 The Classic Name Game — Reimagined</p>
+      <h1 class="hero-title">What's Your<br/><span class="gradient-text">FLAMES Story?</span> ❤️</h1>
+      <p class="hero-sub">Two names. One calculation. One unexpected result.</p>
+      <button class="btn-hero" id="btn-start" aria-label="Start the FLAMES game">
+        <span>Discover Your FLAMES</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <div class="flames-legend" aria-label="FLAMES meanings">
+        <span>F<small>riends</small></span><span>L<small>overs</small></span><span>A<small>ffection</small></span>
+        <span>M<small>arriage</small></span><span>E<small>nemies</small></span><span>S<small>iblings</small></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SCREEN 2: INPUT ── -->
+  <section id="screen-input" class="screen" aria-label="Enter names">
+    <div class="input-inner">
+      <button class="btn-back" onclick="goTo('screen-hero')" aria-label="Go back">← Back</button>
+      <p class="step-eyebrow">Ready? 👀</p>
+      <h2 class="screen-title">Let's begin with<br/>two names…</h2>
+
+      <div class="input-card">
+        <div class="input-group">
+          <label for="name1" class="input-label">
+            <span class="input-icon" aria-hidden="true">👤</span> Your Name
+          </label>
+          <input id="name1" class="input-field" type="text" placeholder="e.g. Virat"
+            maxlength="40" autocomplete="off" spellcheck="false"
+            aria-required="true" aria-describedby="hint1"
+            oninput="clearErr('err1')" onkeydown="handleEnter(event)"/>
+          <div id="err1" class="input-err" role="alert" aria-live="polite"></div>
+        </div>
+
+        <div class="input-divider" aria-hidden="true">
+          <div class="divider-line"></div>
+          <span class="divider-heart">❤️</span>
+          <div class="divider-line"></div>
+        </div>
+
+        <div class="input-group">
+          <label for="name2" class="input-label">
+            <span class="input-icon" aria-hidden="true">❤️</span> Their Name
+          </label>
+          <input id="name2" class="input-field" type="text" placeholder="e.g. Anushka"
+            maxlength="40" autocomplete="off" spellcheck="false"
+            aria-required="true" aria-describedby="hint2"
+            oninput="clearErr('err2')" onkeydown="handleEnter(event)"/>
+          <div id="err2" class="input-err" role="alert" aria-live="polite"></div>
+        </div>
+
+        <button class="btn-primary" id="btn-calculate" onclick="startJourney()" aria-label="Calculate FLAMES result">
+          Let the FLAMES begin 🔥
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SCREEN 3: JOURNEY (Steps 1–4 + Elimination) ── -->
+  <section id="screen-journey" class="screen" aria-label="Calculation journey" aria-live="polite">
+    <div class="journey-inner">
+
+      <!-- Step 1: Normalize -->
+      <div id="step-normalize" class="journey-step hidden">
+        <p class="step-eyebrow">Step 1 of 4 ✨</p>
+        <h2 class="step-title">First, let's clean things up…</h2>
+        <p class="step-body">Spaces and letter case don't affect the game.</p>
+        <div class="normalize-cards">
+          <div class="norm-card" id="norm1">
+            <div class="norm-original" id="norm1-orig"></div>
+            <div class="norm-arrow">↓</div>
+            <div class="norm-result" id="norm1-clean"></div>
+          </div>
+          <div class="norm-plus" aria-hidden="true">+</div>
+          <div class="norm-card" id="norm2">
+            <div class="norm-original" id="norm2-orig"></div>
+            <div class="norm-arrow">↓</div>
+            <div class="norm-result" id="norm2-clean"></div>
+          </div>
+        </div>
+        <button class="btn-next" id="btn-to-match" aria-label="Proceed to character matching">Next →</button>
+      </div>
+
+      <!-- Step 2: Matching -->
+      <div id="step-match" class="journey-step hidden">
+        <p class="step-eyebrow">Step 2 of 4 🔍</p>
+        <h2 class="step-title">Now let's find the common letters…</h2>
+        <div class="match-arena">
+          <div class="match-row" id="match-row1" aria-label="First name letters"></div>
+          <div class="match-row" id="match-row2" aria-label="Second name letters"></div>
+        </div>
+        <div class="match-status" id="match-status" aria-live="polite"></div>
+        <button class="btn-next hidden" id="btn-to-count" aria-label="Proceed to remaining count">Next →</button>
+      </div>
+
+      <!-- Step 3: Count -->
+      <div id="step-count" class="journey-step hidden">
+        <p class="step-eyebrow">Step 3 of 4 🔢</p>
+        <h2 class="step-title">Let's count what's left…</h2>
+        <div class="remaining-display">
+          <div class="remaining-letters" id="remaining-letters" aria-label="Remaining letters"></div>
+          <div class="remaining-count-wrap">
+            <span class="remaining-num" id="remaining-num">0</span>
+            <span class="remaining-label" id="remaining-word"></span>
+          </div>
+        </div>
+        <button class="btn-next hidden" id="btn-to-flames" aria-label="Start FLAMES elimination">Start FLAMES 🔥</button>
+      </div>
+
+      <!-- Step 4: FLAMES Elimination -->
+      <div id="step-flames" class="journey-step hidden">
+        <p class="step-eyebrow">Step 4 of 4 🔥</p>
+        <h2 class="step-title">Now comes the fun part…</h2>
+        <div class="flames-board" id="flames-board" role="group" aria-label="FLAMES letters">
+          <div class="fl-card" id="fl-F" data-meaning="Friends">   <span class="fl-letter">F</span><span class="fl-meaning">Friends</span>   </div>
+          <div class="fl-card" id="fl-L" data-meaning="Lovers">    <span class="fl-letter">L</span><span class="fl-meaning">Lovers</span>    </div>
+          <div class="fl-card" id="fl-A" data-meaning="Affection"> <span class="fl-letter">A</span><span class="fl-meaning">Affection</span> </div>
+          <div class="fl-card" id="fl-M" data-meaning="Marriage">  <span class="fl-letter">M</span><span class="fl-meaning">Marriage</span>  </div>
+          <div class="fl-card" id="fl-E" data-meaning="Enemies">   <span class="fl-letter">E</span><span class="fl-meaning">Enemies</span>   </div>
+          <div class="fl-card" id="fl-S" data-meaning="Siblings">  <span class="fl-letter">S</span><span class="fl-meaning">Siblings</span>  </div>
+        </div>
+        <div class="elim-status" id="elim-status" aria-live="polite"></div>
+        <div class="count-indicator" id="count-indicator" aria-live="polite"></div>
+      </div>
+
+    </div><!-- .journey-inner -->
+  </section>
+
+  <!-- ── SCREEN 4: REVEAL ── -->
+  <section id="screen-reveal" class="screen" aria-label="Result reveal">
+    <div class="reveal-inner">
+      <p class="reveal-spoken" id="reveal-spoken" aria-live="polite"></p>
+      <p class="reveal-your"   id="reveal-your"></p>
+      <div class="reveal-letter-wrap">
+        <div class="reveal-letter" id="reveal-letter" aria-hidden="true"></div>
+      </div>
+      <div class="reveal-title-wrap hidden" id="reveal-title-wrap">
+        <h2 class="reveal-result-name" id="reveal-result-name"></h2>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SCREEN 5: RESULT ── -->
+  <section id="screen-result" class="screen" aria-label="Final result">
+    <div class="result-inner">
+      <div class="result-top">
+        <div class="result-icon" id="result-icon" aria-hidden="true"></div>
+        <p class="result-spoken">FLAMES HAS SPOKEN</p>
+        <h2 class="result-name" id="result-name"></h2>
+        <p class="result-headline" id="result-headline"></p>
+        <p class="result-sub" id="result-sub"></p>
+      </div>
+
+      <!-- Journey Summary -->
+      <div class="journey-summary">
+        <h3 class="summary-title">Your FLAMES Journey</h3>
+        <div class="summary-steps" id="summary-steps"></div>
+      </div>
+
+      <!-- Calculation Timeline (expandable) -->
+      <div class="timeline-section">
+        <button class="btn-timeline" id="btn-timeline"
+          onclick="toggleTimeline()" aria-expanded="false" aria-controls="timeline-body">
+          🔍 See How We Got This Result
+        </button>
+        <div class="timeline-body hidden" id="timeline-body" role="region" aria-label="Calculation timeline">
+          <div id="timeline-list"></div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="result-actions">
+        <button class="btn-primary btn-try-again" onclick="tryAgain()" aria-label="Try again with same names">
+          🔄 Try Again
+        </button>
+        <button class="btn-secondary btn-share-result" onclick="shareResult()" aria-label="Share your result">
+          📤 Share Result
+        </button>
+        <button class="btn-outline btn-another" onclick="playAnother()" aria-label="Play with another pair">
+          💞 Another Pair
+        </button>
+      </div>
+
+      <p class="result-disclaimer">💡 Just for fun — not a relationship prediction ❤️</p>
+    </div>
+  </section>
+
+</main><!-- #app -->
+
+<script src="engine.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
